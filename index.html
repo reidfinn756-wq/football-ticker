@@ -50,38 +50,24 @@ body {
 
 .competition {
     font-size: clamp(18px, 2vw, 30px);
-
     font-weight: 700;
-
     letter-spacing: 4px;
-
     text-transform: uppercase;
-
     opacity: 0.65;
-
     margin-bottom: 70px;
 }
 
 .teams {
     display: grid;
-
-    grid-template-columns:
-        1fr
-        260px
-        1fr;
-
+    grid-template-columns: 1fr 260px 1fr;
     align-items: center;
-
     gap: 40px;
 }
 
 .team-container {
     display: flex;
-
     align-items: center;
-
     gap: 30px;
-
     min-width: 0;
 }
 
@@ -95,15 +81,10 @@ body {
 
 .team {
     font-size: clamp(28px, 4vw, 62px);
-
     font-weight: 700;
-
     line-height: 1.05;
-
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
 }
 
@@ -117,50 +98,32 @@ body {
 
 .logo {
     width: clamp(75px, 9vw, 135px);
-
     height: clamp(75px, 9vw, 135px);
-
     object-fit: contain;
-
     flex-shrink: 0;
-
-    filter:
-        drop-shadow(
-            0 3px 7px rgba(0,0,0,0.65)
-        );
+    filter: drop-shadow(0 3px 7px rgba(0,0,0,0.65));
 }
 
 .score-area {
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
 }
 
 .score {
     font-size: clamp(65px, 9vw, 135px);
-
     font-weight: 800;
-
     line-height: 0.95;
-
     letter-spacing: 6px;
-
     white-space: nowrap;
 }
 
 .status {
     margin-top: 24px;
-
     font-size: clamp(18px, 2vw, 30px);
-
     font-weight: 700;
-
     letter-spacing: 2px;
-
     opacity: 0.65;
 }
 
@@ -170,9 +133,7 @@ body {
 
 .message {
     font-size: clamp(24px, 4vw, 55px);
-
     font-weight: 700;
-
     text-align: center;
 }
 
@@ -187,11 +148,7 @@ body {
     }
 
     .teams {
-        grid-template-columns:
-            1fr
-            150px
-            1fr;
-
+        grid-template-columns: 1fr 150px 1fr;
         gap: 15px;
     }
 
@@ -209,7 +166,6 @@ body {
 
     .teams {
         grid-template-columns: 1fr;
-
         gap: 30px;
     }
 
@@ -245,10 +201,7 @@ body {
             Loading football scores...
         </div>
 
-
         <div class="teams">
-
-            <!-- HOME -->
 
             <div class="team-container home-container">
 
@@ -259,7 +212,6 @@ body {
                     -
                 </div>
 
-
                 <img
                     class="logo"
                     id="homeLogo"
@@ -268,9 +220,6 @@ body {
                 >
 
             </div>
-
-
-            <!-- SCORE -->
 
             <div class="score-area">
 
@@ -281,7 +230,6 @@ body {
                     - - -
                 </div>
 
-
                 <div
                     class="status"
                     id="status"
@@ -291,9 +239,6 @@ body {
 
             </div>
 
-
-            <!-- AWAY -->
-
             <div class="team-container away-container">
 
                 <img
@@ -302,7 +247,6 @@ body {
                     alt=""
                     style="display:none;"
                 >
-
 
                 <div
                     class="team away"
@@ -387,6 +331,9 @@ const LOGOS = {
 
     "Hull City AFC":
         "Hull%20City.png",
+
+    "Ipswich Town FC":
+        "Ipswich%20Town.png",
 
     "Leeds United FC":
         "Leeds%20United.png",
@@ -484,7 +431,6 @@ function preloadLogos() {
 
     const urls = new Set();
 
-
     games.forEach(game => {
 
         const homeLogo =
@@ -497,18 +443,15 @@ function preloadLogos() {
                 game.away?.name
             );
 
-
         if (homeLogo) {
             urls.add(homeLogo);
         }
-
 
         if (awayLogo) {
             urls.add(awayLogo);
         }
 
     });
-
 
     urls.forEach(url => {
 
@@ -562,11 +505,6 @@ function getStatus(game) {
     const status =
         game.status?.short || "";
 
-
-    /*
-    LIVE
-    */
-
     if (
         status === "1H" ||
         status === "2H" ||
@@ -578,15 +516,12 @@ function getStatus(game) {
         const elapsed =
             game.status?.elapsed;
 
-
         return {
 
             text:
                 elapsed !== null &&
                 elapsed !== undefined
-
                     ? `● LIVE ${elapsed}'`
-
                     : "● LIVE",
 
             live: true
@@ -594,11 +529,6 @@ function getStatus(game) {
         };
 
     }
-
-
-    /*
-    FINISHED
-    */
 
     if (
         status === "FT" ||
@@ -617,11 +547,6 @@ function getStatus(game) {
         };
 
     }
-
-
-    /*
-    UPCOMING
-    */
 
     return {
 
@@ -686,19 +611,11 @@ function updateLogo(
 
     }
 
-
     element.alt =
         teamName;
 
-
-    /*
-    Because logos were preloaded,
-    this should already be cached.
-    */
-
     element.src =
         url;
-
 
     element.style.display =
         "block";
@@ -718,70 +635,52 @@ function renderGame(game) {
         return;
     }
 
-
     const homeName =
         game.home?.name ||
         "Home";
 
-
     const awayName =
         game.away?.name ||
         "Away";
-
 
     const homeScore =
         getScore(
             game.score?.home
         );
 
-
     const awayScore =
         getScore(
             game.score?.away
         );
 
-
     const status =
         getStatus(game);
-
 
     const competition =
         game.competition ||
         "Football";
 
-
     const homeLogo =
         getLogo(homeName);
-
 
     const awayLogo =
         getLogo(awayName);
 
 
-    /*
-    Update text only.
-    We do NOT rebuild the page.
-    */
-
     competitionElement.textContent =
         competition;
-
 
     homeNameElement.textContent =
         homeName;
 
-
     awayNameElement.textContent =
         awayName;
-
 
     scoreElement.textContent =
         `${homeScore} - ${awayScore}`;
 
-
     statusElement.textContent =
         status.text;
-
 
     statusElement.classList.toggle(
         "live",
@@ -789,16 +688,11 @@ function renderGame(game) {
     );
 
 
-    /*
-    Update badges.
-    */
-
     updateLogo(
         homeLogoElement,
         homeLogo,
         homeName
     );
-
 
     updateLogo(
         awayLogoElement,
@@ -815,55 +709,27 @@ CHANGE FIXTURE
 ==================================================
 */
 
-function changeGame(
-    newIndex
-) {
+function changeGame(newIndex) {
 
     if (!games.length) {
         return;
     }
 
-
-    /*
-    Keep index valid.
-    */
-
-    if (
-        newIndex < 0
-    ) {
-
+    if (newIndex < 0) {
         newIndex =
             games.length - 1;
-
     }
 
-
-    if (
-        newIndex >= games.length
-    ) {
-
+    if (newIndex >= games.length) {
         newIndex = 0;
-
     }
-
 
     currentGame =
         newIndex;
 
-
-    /*
-    Very short fade.
-    */
-
     gameElement.classList.add(
         "hidden"
     );
-
-
-    /*
-    Update during the fade,
-    rather than rebuilding the DOM.
-    */
 
     setTimeout(
         () => {
@@ -872,13 +738,11 @@ function changeGame(
                 games[currentGame]
             );
 
-
             gameElement.classList.remove(
                 "hidden"
             );
 
         },
-
         60
     );
 
@@ -896,7 +760,6 @@ function nextGame() {
     if (!games.length) {
         return;
     }
-
 
     changeGame(
         currentGame + 1
@@ -926,7 +789,6 @@ async function loadScores() {
                 }
             );
 
-
         if (!response.ok) {
 
             throw new Error(
@@ -935,10 +797,8 @@ async function loadScores() {
 
         }
 
-
         const data =
             await response.json();
-
 
         const newGames =
             Array.isArray(
@@ -947,12 +807,26 @@ async function loadScores() {
                 ? data.games
                 : [];
 
-
         games =
             newGames;
 
+        if (
+            currentGame >= games.length
+        ) {
 
-        if (!games.length) {
+            currentGame = 0;
+
+        }
+
+        preloadLogos();
+
+        if (games.length) {
+
+            renderGame(
+                games[currentGame]
+            );
+
+        } else {
 
             competitionElement.textContent =
                 "No football games available";
@@ -969,37 +843,7 @@ async function loadScores() {
             statusElement.textContent =
                 "";
 
-            return;
-
         }
-
-
-        /*
-        Preload all badges BEFORE
-        displaying updated data.
-        */
-
-        preloadLogos();
-
-
-        /*
-        Keep current fixture when
-        the API refreshes.
-        */
-
-        if (
-            currentGame >= games.length
-        ) {
-
-            currentGame = 0;
-
-        }
-
-
-        renderGame(
-            games[currentGame]
-        );
-
 
     } catch (error) {
 
@@ -1007,7 +851,6 @@ async function loadScores() {
             "Score loading error:",
             error
         );
-
 
         statusElement.textContent =
             "Unable to load scores";
