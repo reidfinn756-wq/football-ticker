@@ -18,31 +18,43 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+
     background: #050505;
     color: white;
-    font-family: Arial, Helvetica, sans-serif;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 }
 
 #ticker {
+
     width: 100vw;
     height: 100vh;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
     padding: 5vh 6vw;
+
 }
 
 .game {
+
     width: 100%;
     max-width: 1500px;
 
     text-align: center;
+
 }
 
 .competition {
-    font-size: clamp(18px, 2.2vw, 32px);
+
+    font-size:
+        clamp(18px, 2.2vw, 32px);
 
     font-weight: 700;
 
@@ -53,9 +65,11 @@ body {
     opacity: 0.65;
 
     margin-bottom: 7vh;
+
 }
 
 .teams {
+
     display: grid;
 
     grid-template-columns:
@@ -66,10 +80,13 @@ body {
     align-items: center;
 
     column-gap: 5vw;
+
 }
 
 .team {
-    font-size: clamp(24px, 4vw, 58px);
+
+    font-size:
+        clamp(24px, 4vw, 58px);
 
     font-weight: 700;
 
@@ -78,75 +95,100 @@ body {
     overflow: hidden;
 
     text-overflow: ellipsis;
+
 }
 
 .home {
+
     text-align: right;
+
 }
 
 .away {
+
     text-align: left;
+
 }
 
 .score-area {
+
     min-width: 220px;
+
 }
 
 .score {
-    font-size: clamp(60px, 9vw, 130px);
+
+    font-size:
+        clamp(60px, 9vw, 130px);
 
     font-weight: 800;
 
     line-height: 1;
 
     letter-spacing: 5px;
+
 }
 
 .status {
+
     margin-top: 20px;
 
-    font-size: clamp(18px, 2vw, 30px);
+    font-size:
+        clamp(18px, 2vw, 30px);
 
     font-weight: 600;
 
     opacity: 0.7;
+
 }
 
 .status.live {
+
     opacity: 1;
+
 }
 
 .message {
-    font-size: clamp(24px, 4vw, 55px);
+
+    font-size:
+        clamp(24px, 4vw, 55px);
 
     font-weight: 700;
 
     text-align: center;
+
 }
 
 .counter {
+
     position: fixed;
 
     bottom: 25px;
 
     left: 50%;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
     font-size: 15px;
 
     opacity: 0.35;
+
 }
 
 </style>
 </head>
 
+
 <body>
+
 
 <div id="ticker">
 
     <div class="message">
+
         Loading football scores...
+
     </div>
 
 </div>
@@ -154,11 +196,25 @@ body {
 
 <script>
 
+
+/*
+ * Cloudflare Worker
+ */
+
 const API_URL =
     "https://footballapi.reidfinn756.workers.dev/scores";
 
 
+/*
+ * Current games
+ */
+
 let games = [];
+
+
+/*
+ * Current position
+ */
 
 let currentGame = 0;
 
@@ -181,7 +237,7 @@ function formatKickoff(date) {
 
 
 /*
- * Get the correct status
+ * Get game status
  */
 
 function getStatus(game) {
@@ -189,88 +245,137 @@ function getStatus(game) {
     const status =
         game.status?.short || "";
 
-    const longStatus =
-        game.status?.long || "";
-
 
     /*
-     * Live games
+     * Live game
      */
 
     if (
+
         status === "1H" ||
         status === "2H" ||
         status === "HT" ||
         status === "ET" ||
         status === "P"
+
     ) {
 
+        const elapsed =
+            game.status?.elapsed;
+
+
         return {
+
             text:
-                game.status?.elapsed
-                    ? `LIVE ${game.status.elapsed}'`
+                elapsed != null
+                    ? `LIVE ${elapsed}'`
                     : "LIVE",
 
             live: true
+
         };
 
     }
 
 
     /*
-     * Finished
+     * Finished game
      */
 
     if (
+
         status === "FT" ||
         status === "AET" ||
         status === "PEN"
+
     ) {
 
         return {
+
             text: "FULL TIME",
+
             live: false
+
         };
 
     }
 
 
     /*
-     * Upcoming
+     * Upcoming game
      */
 
     return {
+
         text:
             formatKickoff(game.date),
 
         live: false
+
     };
 
 }
 
 
 /*
- * Display game
+ * Safely get score
+ *
+ * Upcoming games have null scores.
+ */
+
+function getScore(score) {
+
+    if (
+        score === null ||
+        score === undefined ||
+        score === ""
+    ) {
+
+        return "-";
+
+    }
+
+    return score;
+
+}
+
+
+/*
+ * Display current game
  */
 
 function showGame() {
 
     const ticker =
-        document.getElementById("ticker");
+        document.getElementById(
+            "ticker"
+        );
 
+
+    /*
+     * No games
+     */
 
     if (!games.length) {
 
         ticker.innerHTML = `
+
             <div class="message">
+
                 No football games available
+
             </div>
+
         `;
 
         return;
 
     }
 
+
+    /*
+     * Keep position valid
+     */
 
     if (
         currentGame >= games.length
@@ -285,25 +390,66 @@ function showGame() {
         games[currentGame];
 
 
+    /*
+     * Safely get scores
+     */
+
+    const homeScore =
+        getScore(
+            game.score?.home
+        );
+
+
+    const awayScore =
+        getScore(
+            game.score?.away
+        );
+
+
+    /*
+     * Get status
+     */
+
     const status =
         getStatus(game);
 
 
-    const homeScore =
-        game.score?.home ?? "-";
+    /*
+     * Team names
+     */
+
+    const homeName =
+        game.home?.name ||
+        "Home";
 
 
-    const awayScore =
-        game.score?.away ?? "-";
+    const awayName =
+        game.away?.name ||
+        "Away";
 
+
+    /*
+     * Competition
+
+     */
+
+    const competition =
+        game.competition ||
+        "Football";
+
+
+    /*
+     * Render ticker
+     */
 
     ticker.innerHTML = `
 
         <div class="game">
 
+
             <div class="competition">
 
-                ${game.competition}
+                ${competition}
 
             </div>
 
@@ -313,12 +459,13 @@ function showGame() {
 
                 <div class="team home">
 
-                    ${game.home.name}
+                    ${homeName}
 
                 </div>
 
 
                 <div class="score-area">
+
 
                     <div class="score">
 
@@ -329,19 +476,25 @@ function showGame() {
                     </div>
 
 
-                    <div class="status
-                        ${status.live ? "live" : ""}">
+                    <div
+                        class="status ${
+                            status.live
+                                ? "live"
+                                : ""
+                        }"
+                    >
 
                         ${status.text}
 
                     </div>
+
 
                 </div>
 
 
                 <div class="team away">
 
-                    ${game.away.name}
+                    ${awayName}
 
                 </div>
 
@@ -357,6 +510,7 @@ function showGame() {
 
             </div>
 
+
         </div>
 
     `;
@@ -365,12 +519,13 @@ function showGame() {
 
 
 /*
- * Load scores
+ * Load football scores
  */
 
 async function loadScores() {
 
     try {
+
 
         const response =
             await fetch(
@@ -393,12 +548,19 @@ async function loadScores() {
             await response.json();
 
 
+        /*
+         * Get games from Worker
+         */
+
         games =
-            data.games || [];
+            Array.isArray(data.games)
+                ? data.games
+                : [];
 
 
         /*
-         * Keep current game valid
+         * Make sure current
+         * position is valid
          */
 
         if (
@@ -410,12 +572,20 @@ async function loadScores() {
         }
 
 
+        /*
+         * Display game
+         */
+
         showGame();
 
 
     } catch (error) {
 
-        console.error(error);
+
+        console.error(
+            "Score loading error:",
+            error
+        );
 
 
         document.getElementById(
@@ -442,7 +612,9 @@ async function loadScores() {
 function nextGame() {
 
     if (!games.length) {
+
         return;
+
     }
 
 
@@ -464,30 +636,38 @@ function nextGame() {
 
 
 /*
- * Initial load
+ * Load immediately
  */
 
 loadScores();
 
 
 /*
- * Refresh data every 15 seconds
+ * Refresh scores every 15 seconds
  */
 
 setInterval(
+
     loadScores,
+
     15000
+
 );
 
 
 /*
- * Rotate games every 8 seconds
+ * Move to next fixture
+ * every 8 seconds
  */
 
 setInterval(
+
     nextGame,
+
     8000
+
 );
+
 
 </script>
 
