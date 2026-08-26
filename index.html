@@ -4,78 +4,138 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Football Ticker</title>
+<title>Football Scores</title>
 
 <style>
 
-html, body {
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
     margin: 0;
-    padding: 0;
     width: 100%;
     height: 100%;
-    background: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
     overflow: hidden;
+    background: #050505;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #ticker {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    padding: 5vh 6vw;
 }
 
 .game {
     width: 100%;
+    max-width: 1500px;
+
     text-align: center;
 }
 
 .competition {
-    font-size: 22px;
-    opacity: 0.65;
-    margin-bottom: 25px;
+    font-size: clamp(18px, 2.2vw, 32px);
+
+    font-weight: 700;
+
+    letter-spacing: 3px;
+
     text-transform: uppercase;
-    letter-spacing: 2px;
+
+    opacity: 0.65;
+
+    margin-bottom: 7vh;
 }
 
 .teams {
-    display: flex;
-    justify-content: center;
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        auto
+        1fr;
+
     align-items: center;
-    gap: 60px;
+
+    column-gap: 5vw;
 }
 
 .team {
-    width: 220px;
-    font-size: 26px;
-    font-weight: bold;
+    font-size: clamp(24px, 4vw, 58px);
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
 }
 
-.logo {
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto 15px;
+.home {
+    text-align: right;
+}
+
+.away {
+    text-align: left;
+}
+
+.score-area {
+    min-width: 220px;
 }
 
 .score {
-    font-size: 65px;
-    font-weight: bold;
-    min-width: 150px;
+    font-size: clamp(60px, 9vw, 130px);
+
+    font-weight: 800;
+
+    line-height: 1;
+
+    letter-spacing: 5px;
 }
 
 .status {
-    margin-top: 15px;
-    font-size: 20px;
-    opacity: 0.75;
+    margin-top: 20px;
+
+    font-size: clamp(18px, 2vw, 30px);
+
+    font-weight: 600;
+
+    opacity: 0.7;
+}
+
+.status.live {
+    opacity: 1;
 }
 
 .message {
-    font-size: 30px;
-    opacity: 0.7;
+    font-size: clamp(24px, 4vw, 55px);
+
+    font-weight: 700;
+
+    text-align: center;
+}
+
+.counter {
+    position: fixed;
+
+    bottom: 25px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    font-size: 15px;
+
+    opacity: 0.35;
 }
 
 </style>
@@ -84,170 +144,350 @@ html, body {
 <body>
 
 <div id="ticker">
+
     <div class="message">
         Loading football scores...
     </div>
+
 </div>
+
 
 <script>
 
 const API_URL =
     "https://footballapi.reidfinn756.workers.dev/scores";
 
+
 let games = [];
+
 let currentGame = 0;
 
 
-/* Load scores */
+/*
+ * Format kickoff time
+ */
 
-async function loadScores() {
+function formatKickoff(date) {
 
-    try {
-
-        const response = await fetch(API_URL);
-
-        if (!response.ok) {
-            throw new Error("API error");
+    return new Date(date).toLocaleTimeString(
+        [],
+        {
+            hour: "2-digit",
+            minute: "2-digit"
         }
+    );
 
-        const data = await response.json();
-
-        games = data.games || [];
-
-        if (currentGame >= games.length) {
-            currentGame = 0;
-        }
-
-        showGame();
-
-    } catch (error) {
-
-        console.log(error);
-
-        document.getElementById("ticker").innerHTML =
-            '<div class="message">Unable to load scores</div>';
-    }
 }
 
 
-/* Display current game */
+/*
+ * Get the correct status
+ */
+
+function getStatus(game) {
+
+    const status =
+        game.status?.short || "";
+
+    const longStatus =
+        game.status?.long || "";
+
+
+    /*
+     * Live games
+     */
+
+    if (
+        status === "1H" ||
+        status === "2H" ||
+        status === "HT" ||
+        status === "ET" ||
+        status === "P"
+    ) {
+
+        return {
+            text:
+                game.status?.elapsed
+                    ? `LIVE ${game.status.elapsed}'`
+                    : "LIVE",
+
+            live: true
+        };
+
+    }
+
+
+    /*
+     * Finished
+     */
+
+    if (
+        status === "FT" ||
+        status === "AET" ||
+        status === "PEN"
+    ) {
+
+        return {
+            text: "FULL TIME",
+            live: false
+        };
+
+    }
+
+
+    /*
+     * Upcoming
+     */
+
+    return {
+        text:
+            formatKickoff(game.date),
+
+        live: false
+    };
+
+}
+
+
+/*
+ * Display game
+ */
 
 function showGame() {
 
     const ticker =
         document.getElementById("ticker");
 
-    if (games.length === 0) {
 
-        ticker.innerHTML =
-            '<div class="message">No football games today</div>';
+    if (!games.length) {
+
+        ticker.innerHTML = `
+            <div class="message">
+                No football games available
+            </div>
+        `;
 
         return;
+
     }
 
-    const game = games[currentGame];
+
+    if (
+        currentGame >= games.length
+    ) {
+
+        currentGame = 0;
+
+    }
+
+
+    const game =
+        games[currentGame];
+
+
+    const status =
+        getStatus(game);
+
+
+    const homeScore =
+        game.score?.home ?? "-";
+
+
+    const awayScore =
+        game.score?.away ?? "-";
+
 
     ticker.innerHTML = `
 
         <div class="game">
 
             <div class="competition">
+
                 ${game.competition}
+
             </div>
+
 
             <div class="teams">
 
-                <div class="team">
 
-                    <img
-                        class="logo"
-                        src="${game.away.logo}"
-                    >
+                <div class="team home">
+
+                    ${game.home.name}
+
+                </div>
+
+
+                <div class="score-area">
+
+                    <div class="score">
+
+                        ${homeScore}
+                        -
+                        ${awayScore}
+
+                    </div>
+
+
+                    <div class="status
+                        ${status.live ? "live" : ""}">
+
+                        ${status.text}
+
+                    </div>
+
+                </div>
+
+
+                <div class="team away">
 
                     ${game.away.name}
 
                 </div>
 
 
-                <div>
-
-                    <div class="score">
-
-                        ${game.away.score}
-                        -
-                        ${game.home.score}
-
-                    </div>
-
-                    <div class="status">
-
-                        ${game.elapsed
-                            ? game.elapsed + "'"
-                            : game.status}
-
-                    </div>
-
-                </div>
+            </div>
 
 
-                <div class="team">
+            <div class="counter">
 
-                    <img
-                        class="logo"
-                        src="${game.home.logo}"
-                    >
-
-                    ${game.home.name}
-
-                </div>
+                ${currentGame + 1}
+                /
+                ${games.length}
 
             </div>
 
         </div>
+
     `;
+
 }
 
 
-/* Move to next game */
+/*
+ * Load scores
+ */
+
+async function loadScores() {
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL +
+                "?t=" +
+                Date.now()
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "API request failed"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        games =
+            data.games || [];
+
+
+        /*
+         * Keep current game valid
+         */
+
+        if (
+            currentGame >= games.length
+        ) {
+
+            currentGame = 0;
+
+        }
+
+
+        showGame();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        document.getElementById(
+            "ticker"
+        ).innerHTML = `
+
+            <div class="message">
+
+                Unable to load scores
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/*
+ * Move to next game
+ */
 
 function nextGame() {
 
-    if (games.length === 0) {
+    if (!games.length) {
         return;
     }
 
+
     currentGame++;
 
-    if (currentGame >= games.length) {
+
+    if (
+        currentGame >= games.length
+    ) {
+
         currentGame = 0;
+
     }
 
+
     showGame();
+
 }
 
 
 /*
-   Change 8000 to change
-   how long each game stays
-   on screen.
+ * Initial load
+ */
 
-   8000 = 8 seconds
-*/
-
-setInterval(nextGame, 8000);
+loadScores();
 
 
 /*
-   Refresh live scores
-   every 15 seconds.
-*/
+ * Refresh data every 15 seconds
+ */
 
-setInterval(loadScores, 15000);
+setInterval(
+    loadScores,
+    15000
+);
 
 
-/* Initial load */
+/*
+ * Rotate games every 8 seconds
+ */
 
-loadScores();
+setInterval(
+    nextGame,
+    8000
+);
 
 </script>
 
