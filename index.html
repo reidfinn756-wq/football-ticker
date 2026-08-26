@@ -18,222 +18,131 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-
     background: #050505;
     color: white;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 #ticker {
-
     width: 100vw;
     height: 100vh;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 5vh 6vw;
-
 }
 
 .game {
-
     width: 100%;
     max-width: 1500px;
-
     text-align: center;
-
 }
 
 .competition {
-
-    font-size:
-        clamp(18px, 2.2vw, 32px);
-
+    font-size: clamp(18px, 2.2vw, 32px);
     font-weight: 700;
-
     letter-spacing: 3px;
-
     text-transform: uppercase;
-
     opacity: 0.65;
-
     margin-bottom: 7vh;
-
 }
 
 .teams {
-
     display: grid;
-
-    grid-template-columns:
-        1fr
-        auto
-        1fr;
-
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-
     column-gap: 4vw;
-
 }
 
 .team-container {
-
     display: flex;
-
     align-items: center;
-
     gap: 2vw;
-
 }
 
 .home-container {
-
     justify-content: flex-end;
-
 }
 
 .away-container {
-
     justify-content: flex-start;
-
 }
 
 .team {
-
-    font-size:
-        clamp(24px, 4vw, 58px);
-
+    font-size: clamp(24px, 4vw, 58px);
     font-weight: 700;
-
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
 }
 
 .home {
-
     text-align: right;
-
 }
 
 .away {
-
     text-align: left;
-
 }
 
 .logo {
-
-    width:
-        clamp(65px, 8vw, 125px);
-
-    height:
-        clamp(65px, 8vw, 125px);
-
+    width: clamp(65px, 8vw, 125px);
+    height: clamp(65px, 8vw, 125px);
     object-fit: contain;
-
     flex-shrink: 0;
-
-    filter:
-        drop-shadow(0 2px 5px rgba(0,0,0,0.5));
-
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
 }
 
 .score-area {
-
     min-width: 220px;
-
 }
 
 .score {
-
-    font-size:
-        clamp(60px, 9vw, 130px);
-
+    font-size: clamp(60px, 9vw, 130px);
     font-weight: 800;
-
     line-height: 1;
-
     letter-spacing: 5px;
-
 }
 
 .status {
-
     margin-top: 20px;
-
-    font-size:
-        clamp(18px, 2vw, 30px);
-
+    font-size: clamp(18px, 2vw, 30px);
     font-weight: 600;
-
     opacity: 0.7;
-
 }
 
 .status.live {
-
     opacity: 1;
-
 }
 
 .message {
-
-    font-size:
-        clamp(24px, 4vw, 55px);
-
+    font-size: clamp(24px, 4vw, 55px);
     font-weight: 700;
-
     text-align: center;
-
 }
 
 .counter {
-
     position: fixed;
-
     bottom: 25px;
-
     left: 50%;
-
-    transform:
-        translateX(-50%);
-
+    transform: translateX(-50%);
     font-size: 15px;
-
     opacity: 0.35;
-
 }
 
 </style>
 </head>
 
-
 <body>
-
 
 <div id="ticker">
 
     <div class="message">
-
         Loading football scores...
-
     </div>
 
 </div>
 
-
 <script>
-
 
 /*
  * Cloudflare Worker
@@ -250,9 +159,6 @@ let currentGame = 0;
 
 /*
  * Logo base URL
- *
- * These are the 2026/27 logos from
- * the football-logos GitHub repository.
  */
 
 const LOGO_BASE =
@@ -261,9 +167,6 @@ const LOGO_BASE =
 
 /*
  * Team logo mapping
- *
- * The names match the names returned
- * by your KickoffAPI data.
  */
 
 const LOGOS = {
@@ -332,7 +235,7 @@ const LOGOS = {
 
 
 /*
- * Get logo URL
+ * Get team logo
  */
 
 function getLogo(teamName) {
@@ -341,9 +244,7 @@ function getLogo(teamName) {
         LOGOS[teamName];
 
     if (!file) {
-
         return "";
-
     }
 
     return LOGO_BASE + file;
@@ -353,15 +254,21 @@ function getLogo(teamName) {
 
 /*
  * Format kickoff time
+ *
+ * API gives UTC timestamps.
+ * This explicitly converts them
+ * to UK/London time.
  */
 
 function formatKickoff(date) {
 
     return new Date(date).toLocaleTimeString(
-        [],
+        "en-GB",
         {
+            timeZone: "Europe/London",
             hour: "2-digit",
-            minute: "2-digit"
+            minute: "2-digit",
+            hour12: false
         }
     );
 
@@ -379,13 +286,11 @@ function getStatus(game) {
 
 
     if (
-
         status === "1H" ||
         status === "2H" ||
         status === "HT" ||
         status === "ET" ||
         status === "P"
-
     ) {
 
         const elapsed =
@@ -407,11 +312,9 @@ function getStatus(game) {
 
 
     if (
-
         status === "FT" ||
         status === "AET" ||
         status === "PEN"
-
     ) {
 
         return {
@@ -438,17 +341,15 @@ function getStatus(game) {
 
 
 /*
- * Safely get score
+ * Safely display score
  */
 
 function getScore(score) {
 
     if (
-
         score === null ||
         score === undefined ||
         score === ""
-
     ) {
 
         return "-";
@@ -461,15 +362,13 @@ function getScore(score) {
 
 
 /*
- * Display game
+ * Display current game
  */
 
 function showGame() {
 
     const ticker =
-        document.getElementById(
-            "ticker"
-        );
+        document.getElementById("ticker");
 
 
     if (!games.length) {
@@ -477,9 +376,7 @@ function showGame() {
         ticker.innerHTML = `
 
             <div class="message">
-
                 No football games available
-
             </div>
 
         `;
@@ -489,9 +386,7 @@ function showGame() {
     }
 
 
-    if (
-        currentGame >= games.length
-    ) {
+    if (currentGame >= games.length) {
 
         currentGame = 0;
 
@@ -513,15 +408,11 @@ function showGame() {
 
 
     const homeScore =
-        getScore(
-            game.score?.home
-        );
+        getScore(game.score?.home);
 
 
     const awayScore =
-        getScore(
-            game.score?.away
-        );
+        getScore(game.score?.away);
 
 
     const status =
@@ -545,11 +436,8 @@ function showGame() {
 
         <div class="game">
 
-
             <div class="competition">
-
                 ${competition}
-
             </div>
 
 
@@ -559,9 +447,7 @@ function showGame() {
                 <div class="team-container home-container">
 
                     <div class="team home">
-
                         ${homeName}
-
                     </div>
 
 
@@ -581,7 +467,6 @@ function showGame() {
 
 
                 <div class="score-area">
-
 
                     <div class="score">
 
@@ -604,7 +489,6 @@ function showGame() {
 
                     </div>
 
-
                 </div>
 
 
@@ -625,11 +509,8 @@ function showGame() {
 
 
                     <div class="team away">
-
                         ${awayName}
-
                     </div>
-
 
                 </div>
 
@@ -688,9 +569,7 @@ async function loadScores() {
                 : [];
 
 
-        if (
-            currentGame >= games.length
-        ) {
+        if (currentGame >= games.length) {
 
             currentGame = 0;
 
@@ -732,18 +611,14 @@ async function loadScores() {
 function nextGame() {
 
     if (!games.length) {
-
         return;
-
     }
 
 
     currentGame++;
 
 
-    if (
-        currentGame >= games.length
-    ) {
+    if (currentGame >= games.length) {
 
         currentGame = 0;
 
@@ -767,11 +642,8 @@ loadScores();
  */
 
 setInterval(
-
     loadScores,
-
     15000
-
 );
 
 
@@ -780,13 +652,9 @@ setInterval(
  */
 
 setInterval(
-
     nextGame,
-
     8000
-
 );
-
 
 </script>
 
