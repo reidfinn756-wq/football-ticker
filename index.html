@@ -3,29 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Football Scores</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #050505;
-    color: #fff;
+    color: white;
     font-family: Arial, Helvetica, sans-serif;
 }
 
 #ticker {
     width: 100vw;
     height: 100vh;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
     padding: 40px 60px;
 }
 
@@ -33,39 +38,50 @@ html, body {
     width: 100%;
     max-width: 1500px;
     text-align: center;
-    animation: fadeIn 0.18s ease-out;
+
+    opacity: 1;
+
+    transition: opacity 0.12s ease;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+.game.hidden {
+    opacity: 0;
 }
 
 .competition {
     font-size: clamp(18px, 2vw, 30px);
+
     font-weight: 700;
+
     letter-spacing: 4px;
+
     text-transform: uppercase;
+
     opacity: 0.65;
+
     margin-bottom: 70px;
 }
 
 .teams {
     display: grid;
-    grid-template-columns: 1fr 260px 1fr;
+
+    grid-template-columns:
+        1fr
+        260px
+        1fr;
+
     align-items: center;
+
     gap: 40px;
 }
 
 .team-container {
     display: flex;
+
     align-items: center;
+
     gap: 30px;
+
     min-width: 0;
 }
 
@@ -79,10 +95,15 @@ html, body {
 
 .team {
     font-size: clamp(28px, 4vw, 62px);
+
     font-weight: 700;
+
     line-height: 1.05;
+
     white-space: nowrap;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
 }
 
@@ -96,32 +117,50 @@ html, body {
 
 .logo {
     width: clamp(75px, 9vw, 135px);
+
     height: clamp(75px, 9vw, 135px);
+
     object-fit: contain;
+
     flex-shrink: 0;
-    filter: drop-shadow(0 3px 7px rgba(0,0,0,0.65));
+
+    filter:
+        drop-shadow(
+            0 3px 7px rgba(0,0,0,0.65)
+        );
 }
 
 .score-area {
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
+
     justify-content: center;
 }
 
 .score {
     font-size: clamp(65px, 9vw, 135px);
+
     font-weight: 800;
+
     line-height: 0.95;
+
     letter-spacing: 6px;
+
     white-space: nowrap;
 }
 
 .status {
     margin-top: 24px;
+
     font-size: clamp(18px, 2vw, 30px);
+
     font-weight: 700;
+
     letter-spacing: 2px;
+
     opacity: 0.65;
 }
 
@@ -131,7 +170,9 @@ html, body {
 
 .message {
     font-size: clamp(24px, 4vw, 55px);
+
     font-weight: 700;
+
     text-align: center;
 }
 
@@ -146,7 +187,11 @@ html, body {
     }
 
     .teams {
-        grid-template-columns: 1fr 150px 1fr;
+        grid-template-columns:
+            1fr
+            150px
+            1fr;
+
         gap: 15px;
     }
 
@@ -164,6 +209,7 @@ html, body {
 
     .teams {
         grid-template-columns: 1fr;
+
         gap: 30px;
     }
 
@@ -180,38 +226,132 @@ html, body {
     .score-area {
         order: 3;
     }
+
 }
+
 </style>
 </head>
 
 <body>
 
 <div id="ticker">
-    <div class="message">
-        Loading football scores...
+
+    <div class="game" id="game">
+
+        <div
+            class="competition"
+            id="competition"
+        >
+            Loading football scores...
+        </div>
+
+
+        <div class="teams">
+
+            <!-- HOME -->
+
+            <div class="team-container home-container">
+
+                <div
+                    class="team home"
+                    id="homeName"
+                >
+                    -
+                </div>
+
+
+                <img
+                    class="logo"
+                    id="homeLogo"
+                    alt=""
+                    style="display:none;"
+                >
+
+            </div>
+
+
+            <!-- SCORE -->
+
+            <div class="score-area">
+
+                <div
+                    class="score"
+                    id="score"
+                >
+                    - - -
+                </div>
+
+
+                <div
+                    class="status"
+                    id="status"
+                >
+                    Loading
+                </div>
+
+            </div>
+
+
+            <!-- AWAY -->
+
+            <div class="team-container away-container">
+
+                <img
+                    class="logo"
+                    id="awayLogo"
+                    alt=""
+                    style="display:none;"
+                >
+
+
+                <div
+                    class="team away"
+                    id="awayName"
+                >
+                    -
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+
 </div>
 
+
 <script>
+
+/*
+==================================================
+CONFIG
+==================================================
+*/
 
 const API_URL =
     "https://footballapi.reidfinn756.workers.dev/scores";
 
+
+/*
+==================================================
+STATE
+==================================================
+*/
+
 let games = [];
+
 let currentGame = 0;
 
 
 /*
- * Logo source
- */
+==================================================
+LOGOS
+==================================================
+*/
 
 const LOGO_BASE =
     "https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/";
 
-
-/*
- * Team logo mapping
- */
 
 const LOGOS = {
 
@@ -280,16 +420,51 @@ const LOGOS = {
 
     "Burnley FC":
         "Burnley%20FC.png"
+
 };
 
 
 /*
- * Get a team's logo
- */
+==================================================
+ELEMENTS
+==================================================
+*/
+
+const gameElement =
+    document.getElementById("game");
+
+const competitionElement =
+    document.getElementById("competition");
+
+const homeNameElement =
+    document.getElementById("homeName");
+
+const awayNameElement =
+    document.getElementById("awayName");
+
+const homeLogoElement =
+    document.getElementById("homeLogo");
+
+const awayLogoElement =
+    document.getElementById("awayLogo");
+
+const scoreElement =
+    document.getElementById("score");
+
+const statusElement =
+    document.getElementById("status");
+
+
+/*
+==================================================
+GET LOGO
+==================================================
+*/
 
 function getLogo(teamName) {
 
-    const file = LOGOS[teamName];
+    const file =
+        LOGOS[teamName];
 
     if (!file) {
         return "";
@@ -300,64 +475,87 @@ function getLogo(teamName) {
 
 
 /*
- * Preload all logos currently being used.
- *
- * This means the next fixture should already
- * have its badges downloaded before it appears.
- */
+==================================================
+PRELOAD LOGOS
+==================================================
+*/
 
 function preloadLogos() {
 
     const urls = new Set();
 
+
     games.forEach(game => {
 
         const homeLogo =
-            getLogo(game.home?.name);
+            getLogo(
+                game.home?.name
+            );
 
         const awayLogo =
-            getLogo(game.away?.name);
+            getLogo(
+                game.away?.name
+            );
+
 
         if (homeLogo) {
             urls.add(homeLogo);
         }
 
+
         if (awayLogo) {
             urls.add(awayLogo);
         }
+
     });
+
 
     urls.forEach(url => {
 
-        const image = new Image();
+        const image =
+            new Image();
 
         image.src = url;
 
     });
+
 }
 
 
 /*
- * Convert UTC API time into UK time.
- */
+==================================================
+FORMAT UK TIME
+==================================================
+*/
 
 function formatKickoff(date) {
 
-    return new Date(date).toLocaleTimeString(
-        "en-GB",
-        {
-            timeZone: "Europe/London",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        }
-    );
+    return new Date(date)
+        .toLocaleTimeString(
+            "en-GB",
+            {
+                timeZone:
+                    "Europe/London",
+
+                hour:
+                    "2-digit",
+
+                minute:
+                    "2-digit",
+
+                hour12:
+                    false
+            }
+        );
+
 }
 
 
 /*
- * Determine match status.
- */
+==================================================
+STATUS
+==================================================
+*/
 
 function getStatus(game) {
 
@@ -366,8 +564,8 @@ function getStatus(game) {
 
 
     /*
-     * Live
-     */
+    LIVE
+    */
 
     if (
         status === "1H" ||
@@ -380,23 +578,27 @@ function getStatus(game) {
         const elapsed =
             game.status?.elapsed;
 
+
         return {
 
             text:
                 elapsed !== null &&
                 elapsed !== undefined
+
                     ? `● LIVE ${elapsed}'`
+
                     : "● LIVE",
 
             live: true
 
         };
+
     }
 
 
     /*
-     * Finished
-     */
+    FINISHED
+    */
 
     if (
         status === "FT" ||
@@ -406,31 +608,41 @@ function getStatus(game) {
 
         return {
 
-            text: "FULL TIME",
+            text:
+                "FULL TIME",
 
-            live: false
+            live:
+                false
 
         };
+
     }
 
 
     /*
-     * Upcoming
-     */
+    UPCOMING
+    */
 
     return {
 
-        text: formatKickoff(game.date),
+        text:
+            formatKickoff(
+                game.date
+            ),
 
-        live: false
+        live:
+            false
 
     };
+
 }
 
 
 /*
- * Prevent undefined scores.
- */
+==================================================
+SCORE
+==================================================
+*/
 
 function getScore(score) {
 
@@ -445,44 +657,66 @@ function getScore(score) {
     }
 
     return score;
+
 }
 
 
 /*
- * Display current fixture.
- */
+==================================================
+UPDATE LOGO
+==================================================
+*/
 
-function showGame() {
+function updateLogo(
+    element,
+    url,
+    teamName
+) {
 
-    const ticker =
-        document.getElementById("ticker");
+    if (!url) {
 
+        element.style.display =
+            "none";
 
-    if (!games.length) {
-
-        ticker.innerHTML = `
-
-            <div class="message">
-                No football games available
-            </div>
-
-        `;
+        element.removeAttribute(
+            "src"
+        );
 
         return;
-    }
-
-
-    if (
-        currentGame >= games.length
-    ) {
-
-        currentGame = 0;
 
     }
 
 
-    const game =
-        games[currentGame];
+    element.alt =
+        teamName;
+
+
+    /*
+    Because logos were preloaded,
+    this should already be cached.
+    */
+
+    element.src =
+        url;
+
+
+    element.style.display =
+        "block";
+
+}
+
+
+/*
+==================================================
+RENDER FIXTURE
+==================================================
+*/
+
+function renderGame(game) {
+
+    if (!game) {
+        return;
+    }
 
 
     const homeName =
@@ -524,111 +758,158 @@ function showGame() {
         getLogo(awayName);
 
 
-    ticker.innerHTML = `
+    /*
+    Update text only.
+    We do NOT rebuild the page.
+    */
 
-        <div class="game">
-
-
-            <div class="competition">
-
-                ${competition}
-
-            </div>
+    competitionElement.textContent =
+        competition;
 
 
-            <div class="teams">
+    homeNameElement.textContent =
+        homeName;
 
 
-                <!-- HOME -->
-
-                <div class="team-container home-container">
-
-                    <div class="team home">
-
-                        ${homeName}
-
-                    </div>
+    awayNameElement.textContent =
+        awayName;
 
 
-                    ${
-                        homeLogo
-                            ? `
-                                <img
-                                    class="logo"
-                                    src="${homeLogo}"
-                                    alt="${homeName}"
-                                >
-                              `
-                            : ""
-                    }
-
-                </div>
+    scoreElement.textContent =
+        `${homeScore} - ${awayScore}`;
 
 
-                <!-- SCORE -->
-
-                <div class="score-area">
-
-                    <div class="score">
-
-                        ${homeScore} - ${awayScore}
-
-                    </div>
+    statusElement.textContent =
+        status.text;
 
 
-                    <div
-                        class="status ${
-                            status.live
-                                ? "live"
-                                : ""
-                        }"
-                    >
-
-                        ${status.text}
-
-                    </div>
-
-                </div>
+    statusElement.classList.toggle(
+        "live",
+        status.live
+    );
 
 
-                <!-- AWAY -->
+    /*
+    Update badges.
+    */
 
-                <div class="team-container away-container">
-
-
-                    ${
-                        awayLogo
-                            ? `
-                                <img
-                                    class="logo"
-                                    src="${awayLogo}"
-                                    alt="${awayName}"
-                                >
-                              `
-                            : ""
-                    }
+    updateLogo(
+        homeLogoElement,
+        homeLogo,
+        homeName
+    );
 
 
-                    <div class="team away">
+    updateLogo(
+        awayLogoElement,
+        awayLogo,
+        awayName
+    );
 
-                        ${awayName}
-
-                    </div>
-
-                </div>
-
-
-            </div>
-
-        </div>
-
-    `;
 }
 
 
 /*
- * Load fixture data.
- */
+==================================================
+CHANGE FIXTURE
+==================================================
+*/
+
+function changeGame(
+    newIndex
+) {
+
+    if (!games.length) {
+        return;
+    }
+
+
+    /*
+    Keep index valid.
+    */
+
+    if (
+        newIndex < 0
+    ) {
+
+        newIndex =
+            games.length - 1;
+
+    }
+
+
+    if (
+        newIndex >= games.length
+    ) {
+
+        newIndex = 0;
+
+    }
+
+
+    currentGame =
+        newIndex;
+
+
+    /*
+    Very short fade.
+    */
+
+    gameElement.classList.add(
+        "hidden"
+    );
+
+
+    /*
+    Update during the fade,
+    rather than rebuilding the DOM.
+    */
+
+    setTimeout(
+        () => {
+
+            renderGame(
+                games[currentGame]
+            );
+
+
+            gameElement.classList.remove(
+                "hidden"
+            );
+
+        },
+
+        60
+    );
+
+}
+
+
+/*
+==================================================
+NEXT FIXTURE
+==================================================
+*/
+
+function nextGame() {
+
+    if (!games.length) {
+        return;
+    }
+
+
+    changeGame(
+        currentGame + 1
+    );
+
+}
+
+
+/*
+==================================================
+LOAD SCORES
+==================================================
+*/
 
 async function loadScores() {
 
@@ -640,7 +921,8 @@ async function loadScores() {
                 "?t=" +
                 Date.now(),
                 {
-                    cache: "no-store"
+                    cache:
+                        "no-store"
                 }
             );
 
@@ -658,11 +940,52 @@ async function loadScores() {
             await response.json();
 
 
-        games =
-            Array.isArray(data.games)
+        const newGames =
+            Array.isArray(
+                data.games
+            )
                 ? data.games
                 : [];
 
+
+        games =
+            newGames;
+
+
+        if (!games.length) {
+
+            competitionElement.textContent =
+                "No football games available";
+
+            homeNameElement.textContent =
+                "-";
+
+            awayNameElement.textContent =
+                "-";
+
+            scoreElement.textContent =
+                "- - -";
+
+            statusElement.textContent =
+                "";
+
+            return;
+
+        }
+
+
+        /*
+        Preload all badges BEFORE
+        displaying updated data.
+        */
+
+        preloadLogos();
+
+
+        /*
+        Keep current fixture when
+        the API refreshes.
+        */
 
         if (
             currentGame >= games.length
@@ -673,15 +996,9 @@ async function loadScores() {
         }
 
 
-        /*
-         * Download all badges before
-         * displaying the updated list.
-         */
-
-        preloadLogos();
-
-
-        showGame();
+        renderGame(
+            games[currentGame]
+        );
 
 
     } catch (error) {
@@ -692,59 +1009,29 @@ async function loadScores() {
         );
 
 
-        document.getElementById(
-            "ticker"
-        ).innerHTML = `
-
-            <div class="message">
-
-                Unable to load scores
-
-            </div>
-
-        `;
-    }
-}
-
-
-/*
- * Move to next fixture.
- */
-
-function nextGame() {
-
-    if (!games.length) {
-        return;
-    }
-
-
-    currentGame++;
-
-
-    if (
-        currentGame >= games.length
-    ) {
-
-        currentGame = 0;
+        statusElement.textContent =
+            "Unable to load scores";
 
     }
-
-
-    showGame();
 
 }
 
 
 /*
- * Start.
- */
+==================================================
+INITIAL LOAD
+==================================================
+*/
 
 loadScores();
 
 
 /*
- * Refresh API data every 15 seconds.
- */
+==================================================
+API REFRESH
+Every 15 seconds
+==================================================
+*/
 
 setInterval(
     loadScores,
@@ -753,8 +1040,11 @@ setInterval(
 
 
 /*
- * Change fixture every 8 seconds.
- */
+==================================================
+FIXTURE ROTATION
+Every 8 seconds
+==================================================
+*/
 
 setInterval(
     nextGame,
