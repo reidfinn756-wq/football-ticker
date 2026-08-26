@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Ticker</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: white;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+#ticker {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game {
+    width: 95%;
+    text-align: center;
+}
+
+.competition {
+    font-size: 18px;
+    opacity: .65;
+    margin-bottom: 20px;
+}
+
+.teams {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 45px;
+}
+
+.team {
+    width: 180px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.score {
+    font-size: 55px;
+    font-weight: bold;
+    min-width: 130px;
+}
+
+.status {
+    margin-top: 15px;
+    font-size: 20px;
+    opacity: .8;
+}
+
+.message {
+    font-size: 28px;
+    opacity: .7;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ticker">
+    <div class="message">Loading football scores...</div>
+</div>
+
+<script>
+
+const competitions = [
+    {
+        name: "Premier League",
+        league: "eng.1"
+    },
+    {
+        name: "Champions League",
+        league: "uefa.champions"
+    },
+    {
+        name: "FA Cup",
+        league: "eng.fa"
+    },
+    {
+        name: "Carabao Cup",
+        league: "eng.league_cup"
+    },
+    {
+        name: "Europa League",
+        league: "uefa.europa"
+    },
+    {
+        name: "Conference League",
+        league: "uefa.europa.conf"
+    }
+];
+
+let games = [];
+let currentGame = 0;
+
+async function getGames() {
+
+    let allGames = [];
+
+    for (const competition of competitions) {
+
+        try {
+
+            const url =
+                "https://site.api.espn.com/apis/site/v2/sports/soccer/"
+                + competition.league
+                + "/scoreboard";
+
+            const response = await fetch(url);
+
+            if (!response.ok) continue;
+
+            const data = await response.json();
+
+            if (!data.events) continue;
+
+            data.events.forEach(event => {
+
+                const competitionData =
+                    event.competitions?.[0];
+
+                if (!competitionData) return;
+
+                const competitors =
+                    competitionData.competitors || [];
+
+                if (competitors.length < 2) return;
+
+                const away =
+                    competitors.find(x => x.homeAway === "away");
+
+                const home =
+                    competitors.find(x => x.homeAway === "home");
+
+                if (!away || !home) return;
+
+                allGames.push({
+
+                    competition: competition.name,
+
+                    away: {
+                        name: away.team?.shortDisplayName || away.team?.displayName || "",
+                        logo: away.team?.logo || "",
+                        score: away.score || "0"
+                    },
+
+                    home: {
+                        name: home.team?.shortDisplayName || home.team?.displayName || "",
+                        logo: home.team?.logo || "",
+                        score: home.score || "0"
+                    },
+
+                    status:
+                        event.status?.type?.shortDetail ||
+                        event.status?.type?.detail ||
+                        ""
+
+                });
+
+            }
+
+        } catch (error) {
+            console.log("Error loading", competition.name);
+        }
+    }
+
+    games = allGames;
+
+    if (currentGame >= games.length) {
+        currentGame = 0;
+    }
+
+    showGame();
+}
+
+function showGame() {
+
+    const ticker =
+        document.getElementById("ticker");
+
+    if (!games.length) {
+
+        ticker.innerHTML =
+            '<div class="message">No football games today</div>';
+
+        return;
+    }
+
+    const game = games[currentGame];
+
+    ticker.innerHTML = `
+
+        <div class="game">
+
+            <div class="competition">
+                ${game.competition}
+            </div>
+
+            <div class="teams">
+
+                <div class="team">
+
+                    <img
+                        class="logo"
+                        src="${game.away.logo}"
+                    >
+
+                    ${game.away.name}
+
+                </div>
+
+                <div>
+
+                    <div class="score">
+                        ${game.away.score}
+                        -
+                        ${game.home.score}
+                    </div>
+
+                    <div class="status">
+                        ${game.status}
+                    </div>
+
+                </div>
+
+                <div class="team">
+
+                    <img
+                        class="logo"
+                        src="${game.home.logo}"
+                    >
+
+                    ${game.home.name}
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+}
+
+function nextGame() {
+
+    if (!games.length) return;
+
+    currentGame++;
+
+    if (currentGame >= games.length) {
+        currentGame = 0;
+    }
+
+    showGame();
+}
+
+/* Change this number to control how long each game stays on screen */
+setInterval(nextGame, 8000);
+
+/* Refresh live scores every 15 seconds */
+setInterval(getGames, 15000);
+
+getGames();
+
+</script>
+
+</body>
+</html>
