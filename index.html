@@ -34,7 +34,6 @@ body {
     height: 100vh;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
@@ -79,7 +78,29 @@ body {
 
     align-items: center;
 
-    column-gap: 5vw;
+    column-gap: 4vw;
+
+}
+
+.team-container {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 2vw;
+
+}
+
+.home-container {
+
+    justify-content: flex-end;
+
+}
+
+.away-container {
+
+    justify-content: flex-start;
 
 }
 
@@ -107,6 +128,23 @@ body {
 .away {
 
     text-align: left;
+
+}
+
+.logo {
+
+    width:
+        clamp(65px, 8vw, 125px);
+
+    height:
+        clamp(65px, 8vw, 125px);
+
+    object-fit: contain;
+
+    flex-shrink: 0;
+
+    filter:
+        drop-shadow(0 2px 5px rgba(0,0,0,0.5));
 
 }
 
@@ -205,18 +243,112 @@ const API_URL =
     "https://footballapi.reidfinn756.workers.dev/scores";
 
 
-/*
- * Current games
- */
-
 let games = [];
 
+let currentGame = 0;
+
 
 /*
- * Current position
+ * Logo base URL
+ *
+ * These are the 2026/27 logos from
+ * the football-logos GitHub repository.
  */
 
-let currentGame = 0;
+const LOGO_BASE =
+    "https://raw.githubusercontent.com/luukhopman/football-logos/master/logos/England%20-%20Premier%20League/";
+
+
+/*
+ * Team logo mapping
+ *
+ * The names match the names returned
+ * by your KickoffAPI data.
+ */
+
+const LOGOS = {
+
+    "AFC Bournemouth":
+        "AFC%20Bournemouth.png",
+
+    "Arsenal FC":
+        "Arsenal%20FC.png",
+
+    "Aston Villa FC":
+        "Aston%20Villa.png",
+
+    "Brentford FC":
+        "Brentford%20FC.png",
+
+    "Brighton & Hove Albion FC":
+        "Brighton%20%26%20Hove%20Albion.png",
+
+    "Chelsea FC":
+        "Chelsea%20FC.png",
+
+    "Crystal Palace FC":
+        "Crystal%20Palace.png",
+
+    "Everton FC":
+        "Everton%20FC.png",
+
+    "Fulham FC":
+        "Fulham%20FC.png",
+
+    "Leeds United FC":
+        "Leeds%20United.png",
+
+    "Liverpool FC":
+        "Liverpool%20FC.png",
+
+    "Manchester City FC":
+        "Manchester%20City.png",
+
+    "Manchester United FC":
+        "Manchester%20United.png",
+
+    "Newcastle United FC":
+        "Newcastle%20United.png",
+
+    "Nottingham Forest FC":
+        "Nottingham%20Forest.png",
+
+    "Sunderland AFC":
+        "Sunderland%20AFC.png",
+
+    "Tottenham Hotspur FC":
+        "Tottenham%20Hotspur.png",
+
+    "West Ham United FC":
+        "West%20Ham%20United.png",
+
+    "Wolverhampton Wanderers FC":
+        "Wolverhampton%20Wanderers.png",
+
+    "Burnley FC":
+        "Burnley%20FC.png"
+
+};
+
+
+/*
+ * Get logo URL
+ */
+
+function getLogo(teamName) {
+
+    const file =
+        LOGOS[teamName];
+
+    if (!file) {
+
+        return "";
+
+    }
+
+    return LOGO_BASE + file;
+
+}
 
 
 /*
@@ -246,10 +378,6 @@ function getStatus(game) {
         game.status?.short || "";
 
 
-    /*
-     * Live game
-     */
-
     if (
 
         status === "1H" ||
@@ -278,10 +406,6 @@ function getStatus(game) {
     }
 
 
-    /*
-     * Finished game
-     */
-
     if (
 
         status === "FT" ||
@@ -301,10 +425,6 @@ function getStatus(game) {
     }
 
 
-    /*
-     * Upcoming game
-     */
-
     return {
 
         text:
@@ -319,16 +439,16 @@ function getStatus(game) {
 
 /*
  * Safely get score
- *
- * Upcoming games have null scores.
  */
 
 function getScore(score) {
 
     if (
+
         score === null ||
         score === undefined ||
         score === ""
+
     ) {
 
         return "-";
@@ -341,7 +461,7 @@ function getScore(score) {
 
 
 /*
- * Display current game
+ * Display game
  */
 
 function showGame() {
@@ -351,10 +471,6 @@ function showGame() {
             "ticker"
         );
 
-
-    /*
-     * No games
-     */
 
     if (!games.length) {
 
@@ -373,10 +489,6 @@ function showGame() {
     }
 
 
-    /*
-     * Keep position valid
-     */
-
     if (
         currentGame >= games.length
     ) {
@@ -390,9 +502,15 @@ function showGame() {
         games[currentGame];
 
 
-    /*
-     * Safely get scores
-     */
+    const homeName =
+        game.home?.name ||
+        "Home";
+
+
+    const awayName =
+        game.away?.name ||
+        "Away";
+
 
     const homeScore =
         getScore(
@@ -406,41 +524,22 @@ function showGame() {
         );
 
 
-    /*
-     * Get status
-     */
-
     const status =
         getStatus(game);
 
-
-    /*
-     * Team names
-     */
-
-    const homeName =
-        game.home?.name ||
-        "Home";
-
-
-    const awayName =
-        game.away?.name ||
-        "Away";
-
-
-    /*
-     * Competition
-
-     */
 
     const competition =
         game.competition ||
         "Football";
 
 
-    /*
-     * Render ticker
-     */
+    const homeLogo =
+        getLogo(homeName);
+
+
+    const awayLogo =
+        getLogo(awayName);
+
 
     ticker.innerHTML = `
 
@@ -457,9 +556,26 @@ function showGame() {
             <div class="teams">
 
 
-                <div class="team home">
+                <div class="team-container home-container">
 
-                    ${homeName}
+                    <div class="team home">
+
+                        ${homeName}
+
+                    </div>
+
+
+                    ${
+                        homeLogo
+                            ? `
+                                <img
+                                    class="logo"
+                                    src="${homeLogo}"
+                                    alt="${homeName}"
+                                >
+                              `
+                            : ""
+                    }
 
                 </div>
 
@@ -492,9 +608,28 @@ function showGame() {
                 </div>
 
 
-                <div class="team away">
+                <div class="team-container away-container">
 
-                    ${awayName}
+
+                    ${
+                        awayLogo
+                            ? `
+                                <img
+                                    class="logo"
+                                    src="${awayLogo}"
+                                    alt="${awayName}"
+                                >
+                              `
+                            : ""
+                    }
+
+
+                    <div class="team away">
+
+                        ${awayName}
+
+                    </div>
+
 
                 </div>
 
@@ -519,13 +654,12 @@ function showGame() {
 
 
 /*
- * Load football scores
+ * Load scores
  */
 
 async function loadScores() {
 
     try {
-
 
         const response =
             await fetch(
@@ -548,20 +682,11 @@ async function loadScores() {
             await response.json();
 
 
-        /*
-         * Get games from Worker
-         */
-
         games =
             Array.isArray(data.games)
                 ? data.games
                 : [];
 
-
-        /*
-         * Make sure current
-         * position is valid
-         */
 
         if (
             currentGame >= games.length
@@ -572,15 +697,10 @@ async function loadScores() {
         }
 
 
-        /*
-         * Display game
-         */
-
         showGame();
 
 
     } catch (error) {
-
 
         console.error(
             "Score loading error:",
@@ -636,7 +756,7 @@ function nextGame() {
 
 
 /*
- * Load immediately
+ * Initial load
  */
 
 loadScores();
@@ -656,8 +776,7 @@ setInterval(
 
 
 /*
- * Move to next fixture
- * every 8 seconds
+ * Rotate games every 8 seconds
  */
 
 setInterval(
