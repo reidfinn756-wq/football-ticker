@@ -3,390 +3,206 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Football Scores</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
     margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-
     background: #050505;
-    color: #ffffff;
-
+    color: #fff;
     font-family: Arial, Helvetica, sans-serif;
 }
-
-
-/* Main screen */
 
 #ticker {
     width: 100vw;
     height: 100vh;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 40px 60px;
 }
-
-
-/* Match card */
 
 .game {
     width: 100%;
     max-width: 1500px;
-
     text-align: center;
-
-    animation: fadeIn 0.45s ease;
+    animation: fadeIn 0.18s ease-out;
 }
 
-
-/* Smooth transition */
-
 @keyframes fadeIn {
-
     from {
         opacity: 0;
-        transform: translateY(8px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
     }
-
 }
-
-
-/* Competition */
 
 .competition {
-
     font-size: clamp(18px, 2vw, 30px);
-
     font-weight: 700;
-
     letter-spacing: 4px;
-
     text-transform: uppercase;
-
     opacity: 0.65;
-
     margin-bottom: 70px;
-
 }
-
-
-/* Teams */
 
 .teams {
-
     display: grid;
-
-    grid-template-columns:
-        1fr
-        260px
-        1fr;
-
+    grid-template-columns: 1fr 260px 1fr;
     align-items: center;
-
     gap: 40px;
-
 }
-
-
-/* Team side */
 
 .team-container {
-
     display: flex;
-
     align-items: center;
-
     gap: 30px;
-
     min-width: 0;
-
 }
-
-
-/* Home team */
 
 .home-container {
-
     justify-content: flex-end;
-
 }
-
-
-/* Away team */
 
 .away-container {
-
     justify-content: flex-start;
-
 }
-
-
-/* Team names */
 
 .team {
-
     font-size: clamp(28px, 4vw, 62px);
-
     font-weight: 700;
-
     line-height: 1.05;
-
     white-space: nowrap;
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
 }
 
-
-/* Alignment */
-
 .home {
-
     text-align: right;
-
 }
 
 .away {
-
     text-align: left;
-
 }
-
-
-/* Club badges */
 
 .logo {
-
     width: clamp(75px, 9vw, 135px);
-
     height: clamp(75px, 9vw, 135px);
-
     object-fit: contain;
-
     flex-shrink: 0;
-
-    filter:
-        drop-shadow(
-            0 3px 7px
-            rgba(0,0,0,0.65)
-        );
-
+    filter: drop-shadow(0 3px 7px rgba(0,0,0,0.65));
 }
-
-
-/* Centre score */
 
 .score-area {
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
 }
-
-
-/* Score */
 
 .score {
-
     font-size: clamp(65px, 9vw, 135px);
-
     font-weight: 800;
-
     line-height: 0.95;
-
     letter-spacing: 6px;
-
     white-space: nowrap;
-
 }
-
-
-/* Status */
 
 .status {
-
     margin-top: 24px;
-
     font-size: clamp(18px, 2vw, 30px);
-
     font-weight: 700;
-
     letter-spacing: 2px;
-
     opacity: 0.65;
-
 }
-
-
-/* Live status */
 
 .status.live {
-
     opacity: 1;
-
 }
-
-
-/* Loading/error */
 
 .message {
-
     font-size: clamp(24px, 4vw, 55px);
-
     font-weight: 700;
-
     text-align: center;
-
 }
-
-
-/* Smaller screens */
 
 @media (max-width: 800px) {
 
     #ticker {
-
         padding: 25px;
-
     }
-
 
     .competition {
-
         margin-bottom: 45px;
-
     }
-
 
     .teams {
-
-        grid-template-columns:
-            1fr
-            150px
-            1fr;
-
+        grid-template-columns: 1fr 150px 1fr;
         gap: 15px;
-
     }
-
 
     .team-container {
-
         gap: 12px;
-
     }
-
 
     .logo {
-
         width: 70px;
-
         height: 70px;
-
     }
-
 }
-
-
-/* Very small screens */
 
 @media (max-width: 550px) {
 
     .teams {
-
-        grid-template-columns:
-            1fr;
-
+        grid-template-columns: 1fr;
         gap: 30px;
-
     }
-
 
     .home-container,
     .away-container {
-
         justify-content: center;
-
     }
-
 
     .home,
     .away {
-
         text-align: center;
-
     }
-
 
     .score-area {
-
         order: 3;
-
     }
-
 }
-
 </style>
 </head>
 
-
 <body>
 
-
 <div id="ticker">
-
     <div class="message">
-
         Loading football scores...
-
     </div>
-
 </div>
 
-
 <script>
-
-
-/*
- * Cloudflare Worker
- */
 
 const API_URL =
     "https://footballapi.reidfinn756.workers.dev/scores";
 
-
 let games = [];
-
 let currentGame = 0;
 
 
 /*
- * Logo base URL
+ * Logo source
  */
 
 const LOGO_BASE =
@@ -417,6 +233,9 @@ const LOGOS = {
     "Chelsea FC":
         "Chelsea%20FC.png",
 
+    "Coventry City FC":
+        "Coventry%20City.png",
+
     "Crystal Palace FC":
         "Crystal%20Palace.png",
 
@@ -425,6 +244,9 @@ const LOGOS = {
 
     "Fulham FC":
         "Fulham%20FC.png",
+
+    "Hull City AFC":
+        "Hull%20City.png",
 
     "Leeds United FC":
         "Leeds%20United.png",
@@ -458,33 +280,65 @@ const LOGOS = {
 
     "Burnley FC":
         "Burnley%20FC.png"
-
 };
 
 
 /*
- * Get logo
+ * Get a team's logo
  */
 
 function getLogo(teamName) {
 
-    const file =
-        LOGOS[teamName];
+    const file = LOGOS[teamName];
 
     if (!file) {
-
         return "";
-
     }
 
     return LOGO_BASE + file;
-
 }
 
 
 /*
- * Convert API UTC time
- * into UK/London time.
+ * Preload all logos currently being used.
+ *
+ * This means the next fixture should already
+ * have its badges downloaded before it appears.
+ */
+
+function preloadLogos() {
+
+    const urls = new Set();
+
+    games.forEach(game => {
+
+        const homeLogo =
+            getLogo(game.home?.name);
+
+        const awayLogo =
+            getLogo(game.away?.name);
+
+        if (homeLogo) {
+            urls.add(homeLogo);
+        }
+
+        if (awayLogo) {
+            urls.add(awayLogo);
+        }
+    });
+
+    urls.forEach(url => {
+
+        const image = new Image();
+
+        image.src = url;
+
+    });
+}
+
+
+/*
+ * Convert UTC API time into UK time.
  */
 
 function formatKickoff(date) {
@@ -498,7 +352,6 @@ function formatKickoff(date) {
             hour12: false
         }
     );
-
 }
 
 
@@ -513,47 +366,42 @@ function getStatus(game) {
 
 
     /*
-     * Live matches
+     * Live
      */
 
     if (
-
         status === "1H" ||
         status === "2H" ||
         status === "HT" ||
         status === "ET" ||
         status === "P"
-
     ) {
 
         const elapsed =
             game.status?.elapsed;
 
-
         return {
 
             text:
-                elapsed != null
+                elapsed !== null &&
+                elapsed !== undefined
                     ? `● LIVE ${elapsed}'`
                     : "● LIVE",
 
             live: true
 
         };
-
     }
 
 
     /*
-     * Finished matches
+     * Finished
      */
 
     if (
-
         status === "FT" ||
         status === "AET" ||
         status === "PEN"
-
     ) {
 
         return {
@@ -563,38 +411,33 @@ function getStatus(game) {
             live: false
 
         };
-
     }
 
 
     /*
-     * Upcoming matches
+     * Upcoming
      */
 
     return {
 
-        text:
-            formatKickoff(game.date),
+        text: formatKickoff(game.date),
 
         live: false
 
     };
-
 }
 
 
 /*
- * Safely display score.
+ * Prevent undefined scores.
  */
 
 function getScore(score) {
 
     if (
-
         score === null ||
         score === undefined ||
         score === ""
-
     ) {
 
         return "-";
@@ -602,12 +445,11 @@ function getScore(score) {
     }
 
     return score;
-
 }
 
 
 /*
- * Display current game.
+ * Display current fixture.
  */
 
 function showGame() {
@@ -621,21 +463,14 @@ function showGame() {
         ticker.innerHTML = `
 
             <div class="message">
-
                 No football games available
-
             </div>
 
         `;
 
         return;
-
     }
 
-
-    /*
-     * Prevent invalid index.
-     */
 
     if (
         currentGame >= games.length
@@ -704,7 +539,7 @@ function showGame() {
             <div class="teams">
 
 
-                <!-- HOME TEAM -->
+                <!-- HOME -->
 
                 <div class="team-container home-container">
 
@@ -736,9 +571,7 @@ function showGame() {
 
                     <div class="score">
 
-                        ${homeScore}
-                        -
-                        ${awayScore}
+                        ${homeScore} - ${awayScore}
 
                     </div>
 
@@ -758,7 +591,7 @@ function showGame() {
                 </div>
 
 
-                <!-- AWAY TEAM -->
+                <!-- AWAY -->
 
                 <div class="team-container away-container">
 
@@ -787,16 +620,14 @@ function showGame() {
 
             </div>
 
-
         </div>
 
     `;
-
 }
 
 
 /*
- * Load scores from Worker.
+ * Load fixture data.
  */
 
 async function loadScores() {
@@ -807,7 +638,10 @@ async function loadScores() {
             await fetch(
                 API_URL +
                 "?t=" +
-                Date.now()
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
             );
 
 
@@ -839,6 +673,14 @@ async function loadScores() {
         }
 
 
+        /*
+         * Download all badges before
+         * displaying the updated list.
+         */
+
+        preloadLogos();
+
+
         showGame();
 
 
@@ -861,22 +703,18 @@ async function loadScores() {
             </div>
 
         `;
-
     }
-
 }
 
 
 /*
- * Move to next game.
+ * Move to next fixture.
  */
 
 function nextGame() {
 
     if (!games.length) {
-
         return;
-
     }
 
 
@@ -898,14 +736,14 @@ function nextGame() {
 
 
 /*
- * Initial load.
+ * Start.
  */
 
 loadScores();
 
 
 /*
- * Refresh scores every 15 seconds.
+ * Refresh API data every 15 seconds.
  */
 
 setInterval(
@@ -915,14 +753,13 @@ setInterval(
 
 
 /*
- * Rotate fixtures every 8 seconds.
+ * Change fixture every 8 seconds.
  */
 
 setInterval(
     nextGame,
     8000
 );
-
 
 </script>
 
