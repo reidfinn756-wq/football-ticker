@@ -3,16 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Football Ticker</title>
 
 <style>
+
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     background: #000;
-    color: white;
+    color: #fff;
     font-family: Arial, sans-serif;
     overflow: hidden;
 }
@@ -26,180 +28,116 @@ html, body {
 }
 
 .game {
-    width: 95%;
+    width: 100%;
     text-align: center;
 }
 
 .competition {
-    font-size: 18px;
-    opacity: .65;
-    margin-bottom: 20px;
+    font-size: 22px;
+    opacity: 0.65;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .teams {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 45px;
+    gap: 60px;
 }
 
 .team {
-    width: 180px;
-    font-size: 24px;
+    width: 220px;
+    font-size: 26px;
     font-weight: bold;
 }
 
 .logo {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     object-fit: contain;
     display: block;
-    margin: 0 auto 10px;
+    margin: 0 auto 15px;
 }
 
 .score {
-    font-size: 55px;
+    font-size: 65px;
     font-weight: bold;
-    min-width: 130px;
+    min-width: 150px;
 }
 
 .status {
     margin-top: 15px;
     font-size: 20px;
-    opacity: .8;
+    opacity: 0.75;
 }
 
 .message {
-    font-size: 28px;
-    opacity: .7;
+    font-size: 30px;
+    opacity: 0.7;
 }
+
 </style>
 </head>
 
 <body>
 
 <div id="ticker">
-    <div class="message">Loading football scores...</div>
+    <div class="message">
+        Loading football scores...
+    </div>
 </div>
 
 <script>
 
-const competitions = [
-    {
-        name: "Premier League",
-        league: "eng.1"
-    },
-    {
-        name: "Champions League",
-        league: "uefa.champions"
-    },
-    {
-        name: "FA Cup",
-        league: "eng.fa"
-    },
-    {
-        name: "Carabao Cup",
-        league: "eng.league_cup"
-    },
-    {
-        name: "Europa League",
-        league: "uefa.europa"
-    },
-    {
-        name: "Conference League",
-        league: "uefa.europa.conf"
-    }
-];
+const API_URL =
+    "https://footballapi.reidfinn756.workers.dev/scores";
 
 let games = [];
 let currentGame = 0;
 
-async function getGames() {
 
-    let allGames = [];
+/* Load scores */
 
-    for (const competition of competitions) {
+async function loadScores() {
 
-        try {
+    try {
 
-            const url =
-                "https://site.api.espn.com/apis/site/v2/sports/soccer/"
-                + competition.league
-                + "/scoreboard";
+        const response = await fetch(API_URL);
 
-            const response = await fetch(url);
-
-            if (!response.ok) continue;
-
-            const data = await response.json();
-
-            if (!data.events) continue;
-
-            data.events.forEach(event => {
-
-                const competitionData =
-                    event.competitions?.[0];
-
-                if (!competitionData) return;
-
-                const competitors =
-                    competitionData.competitors || [];
-
-                if (competitors.length < 2) return;
-
-                const away =
-                    competitors.find(x => x.homeAway === "away");
-
-                const home =
-                    competitors.find(x => x.homeAway === "home");
-
-                if (!away || !home) return;
-
-                allGames.push({
-
-                    competition: competition.name,
-
-                    away: {
-                        name: away.team?.shortDisplayName || away.team?.displayName || "",
-                        logo: away.team?.logo || "",
-                        score: away.score || "0"
-                    },
-
-                    home: {
-                        name: home.team?.shortDisplayName || home.team?.displayName || "",
-                        logo: home.team?.logo || "",
-                        score: home.score || "0"
-                    },
-
-                    status:
-                        event.status?.type?.shortDetail ||
-                        event.status?.type?.detail ||
-                        ""
-
-                });
-
-            }
-
-        } catch (error) {
-            console.log("Error loading", competition.name);
+        if (!response.ok) {
+            throw new Error("API error");
         }
+
+        const data = await response.json();
+
+        games = data.games || [];
+
+        if (currentGame >= games.length) {
+            currentGame = 0;
+        }
+
+        showGame();
+
+    } catch (error) {
+
+        console.log(error);
+
+        document.getElementById("ticker").innerHTML =
+            '<div class="message">Unable to load scores</div>';
     }
-
-    games = allGames;
-
-    if (currentGame >= games.length) {
-        currentGame = 0;
-    }
-
-    showGame();
 }
+
+
+/* Display current game */
 
 function showGame() {
 
     const ticker =
         document.getElementById("ticker");
 
-    if (!games.length) {
+    if (games.length === 0) {
 
         ticker.innerHTML =
             '<div class="message">No football games today</div>';
@@ -230,19 +168,27 @@ function showGame() {
 
                 </div>
 
+
                 <div>
 
                     <div class="score">
+
                         ${game.away.score}
                         -
                         ${game.home.score}
+
                     </div>
 
                     <div class="status">
-                        ${game.status}
+
+                        ${game.elapsed
+                            ? game.elapsed + "'"
+                            : game.status}
+
                     </div>
 
                 </div>
+
 
                 <div class="team">
 
@@ -261,9 +207,14 @@ function showGame() {
     `;
 }
 
+
+/* Move to next game */
+
 function nextGame() {
 
-    if (!games.length) return;
+    if (games.length === 0) {
+        return;
+    }
 
     currentGame++;
 
@@ -274,13 +225,29 @@ function nextGame() {
     showGame();
 }
 
-/* Change this number to control how long each game stays on screen */
+
+/*
+   Change 8000 to change
+   how long each game stays
+   on screen.
+
+   8000 = 8 seconds
+*/
+
 setInterval(nextGame, 8000);
 
-/* Refresh live scores every 15 seconds */
-setInterval(getGames, 15000);
 
-getGames();
+/*
+   Refresh live scores
+   every 15 seconds.
+*/
+
+setInterval(loadScores, 15000);
+
+
+/* Initial load */
+
+loadScores();
 
 </script>
 
